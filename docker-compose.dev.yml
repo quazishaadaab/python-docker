@@ -1,0 +1,59 @@
+version: '3.8'
+#in docker compose, we do not need to create a network , it automatically connects
+services: #specify the containers for the app(services)
+ web: #container 1 named web
+  build:
+   context: . #put period here or else wont work
+  ports:
+  - 8000:5000 #8000 is this containers port, 5000 is server port
+  volumes:
+  - ./:/app
+
+ mysqldb: #container 2 names mysqldb
+  image: mysql
+  ports:
+  - 3306:3306
+  environment:
+  - MYSQL_ROOT_PASSWORD=p@ssw0rd1
+  volumes:
+  - mysql:/var/lib/mysql
+  - mysql_config:/etc/mysql
+
+volumes: #creates volumes for this folder(python-docker) to presist data
+  mysql:
+  mysql_config:
+
+  #DOCKER_HUBTOKEN=dckr_pat_m2xLI6YhKg32KemalqnhGZRth6o
+
+
+name: ci
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/clockbox:latest
