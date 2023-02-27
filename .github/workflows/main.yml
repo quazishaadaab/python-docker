@@ -27,5 +27,5 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          load: true
-          tags: quazishaadaab
+          push: true
+          tags: user/app:latest
